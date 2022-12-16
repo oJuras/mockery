@@ -1,0 +1,65 @@
+<script>
+let stringTarget = '', olocoText = '', charCodeArr = [], dancaBixo = '', montanha = [];
+
+function reset(){
+    let stringTarget = '', olocoText = '', charCodeArr = [], dancaBixo = '', montanha = []; 
+    document.getElementById("result").innerText = '';
+}
+
+function olocofy(stringTarget){
+    for(let i = 0; i < stringTarget.length; i++){
+        let code = stringTarget.charCodeAt(i);
+        let result = code.toString(2)
+        for(let k = 0; k < result.length; k++){
+            if(result[k] == 1){
+                charCodeArr.push('oloco');
+            }else{
+                charCodeArr.push('oloko');
+            }
+        }
+        charCodeArr.push("olloko");
+    }
+    let finito = charCodeArr.toString()
+    reset();
+    return finito
+}
+
+function desolocofy(olocoText){
+    let pegouNoMeu = olocoText.split(',')
+    for(let pau = 0; pau < pegouNoMeu.length; pau++){
+        if(pegouNoMeu[pau] == 'olloko'){
+            montanha.push(dancaBixo)
+            dancaBixo = '';
+        }else{
+            if(pegouNoMeu[pau] == 'oloco'){
+                pegouNoMeu[pau] = '1'
+            }
+            if(pegouNoMeu[pau] == 'oloko'){
+                pegouNoMeu[pau] = '0'
+            }
+            dancaBixo += ''+pegouNoMeu[pau];
+        }
+    }
+    let finito = montanha.map(elem => String.fromCharCode(parseInt(elem, 2))).join("");
+    reset();
+    return finito
+}
+</script>
+<script>
+    function siteEncrypt(){
+        let text = document.getElementById('input').value;
+        let morp = olocofy(text)
+        document.getElementById("result").innerText = morp;
+    }
+    function siteDecrypt(){
+        let text = document.getElementById('input').value;
+        let morp = desolocofy(text)
+        document.getElementById("result").innerText = morp;
+    }
+</script>
+<body>
+    <input id="input" type="text">
+    <button onclick="siteEncrypt()">Bonaldofy</button>
+    <button onclick="siteDecrypt()">DesBonaldofy</button>
+    <div id="result"></div>
+</body>
