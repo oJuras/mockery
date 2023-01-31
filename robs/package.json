@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "google-tts.js": "^0.0.2",
+    "play-sound": "^1.1.5",
+    "sentiment": "^5.0.2",
+    "translate-google": "^1.5.0"
+  }
+}
