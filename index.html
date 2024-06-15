@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconhecimento de Voz com Gráfico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .status {
+            margin: 20px;
+            font-size: 1.2em;
+            color: green;
+        }
+        #bar {
+            width: 300px;
+            height: 25px;
+            background-color: lightgray;
+            margin: 20px auto;
+            border: 1px solid black;
+        }
+        #bar div {
+            height: 100%;
+            background-color: green;
+            width: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reconhecimento de Voz com Gráfico</h1>
+    <p class="status" id="status">Inicializando...</p>
+    <div id="bar"><div></div></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+            var recognition = new SpeechAPI();
+            var gotcha = "";
+            var holdanum, filter, gatherToque;
+            var instruido = false;
+
+            recognition.continuous = true;
+            recognition.lang = "pt-BR";
+
+            recognition.onstart = function() {
+                document.getElementById('status').textContent = "Gravação iniciada. Fale algo...";
+            };
+
+            recognition.onend = function() {
+                if (instruido) {
+                    recognition.start();
+                } else {
+                    document.getElementById('status').textContent = "Gravação parada.";
+                }
+            };
+
+            recognition.onresult = function(event) {
+                holdanum = event.results.length;
+                gotcha = event.results[holdanum - 1][0].transcript;
+                filter = gotcha.toLowerCase();
+
+                if (filter.indexOf("eucalipto") != -1 || filter.indexOf("alcalipto") != -1) {
+                    instruido = true;
+
+                    if (filter.indexOf("toque") != -1) {
+                        gatherToque = filter.replaceAll(" ", "+");
+                        gatherToque = gatherToque.replace("eucalipto+toque", "").replace("alcalipto+toque", "");
+                        gatherToque = gatherToque.replace(/^\+/, "").replaceAll("undefined", "");
+
+                        if (gatherToque) {
+                            window.open("https://www.google.com/search?q=" + gatherToque + "+no+youtube&sxsrf=AOaemvI2IUIfEKg1tFZh9V-PycAXidkruw%3A1637543676819&ei=_O6aYai7Mezf1sQP9Z6EwAU&oq=yung+buda&gs_lcp=Cgdnd3Mtd2l6EAMYADIECCMQJzIECCMQJzIECCMQJzIICC4QgAQQsQMyBQgAEIAEMgUILhCABDIFCAAQgAQyBQguEIAEMgUILhCABDIFCAAQgAQ6BwgAEEcQsAM6BwgAELADEEM6CgguEMgDELADEEM6EAguEMcBEK8BEMgDELADEEM6EQguEIAEELEDEIMBEMcBENEDOggIABCABBCxAzoOCC4QgAQQsQMQxwEQowI6BwguELEDEEM6CwguEIAEELEDEIMBOg4ILhCABBCxAxDHARCvAToHCC4QgAQQCkoFCDgSATFKBAhBGABQpQlY2RFg6xZoAXACeACAAfsBiAGgDZIBBTAuNi4zmAEAoAEByAENwAEB&sclient=gws-wiz&btnI=I'm Feeling Lucky", '_blank');
+                        }
+                    }
+                } else {
+                    instruido = false;
+                }
+            };
+
+            // Iniciar automaticamente ao carregar a página
+            recognition.start();
+            instruido = true;
+
+            // Web Audio API para visualização do microfone
+            if (navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    var analyser = audioContext.createAnalyser();
+                    var microphone = audioContext.createMediaStreamSource(stream);
+                    var scriptProcessor = audioContext.createScriptProcessor(256, 1, 1);
+
+                    analyser.smoothingTimeConstant = 0.8;
+                    analyser.fftSize = 1024;
+
+                    microphone.connect(analyser);
+                    analyser.connect(scriptProcessor);
+                    scriptProcessor.connect(audioContext.destination);
+                    scriptProcessor.onaudioprocess = function() {
+                        var array = new Uint8Array(analyser.frequencyBinCount);
+                        analyser.getByteFrequencyData(array);
+                        var average = array.reduce((a, b) => a + b) / array.length;
+                        var bar = document.getElementById('bar').firstElementChild;
+                        bar.style.width = Math.min(average / 2, 100) + '%';
+                    };
+                })
+                .catch(function(err) {
+                    console.error('O seguinte erro ocorreu: ' + err);
+                });
+            } else {
+                console.log('getUserMedia não é suportado no seu navegador.');
+            }
+        });
+    </script>
+</body>
+</html>
